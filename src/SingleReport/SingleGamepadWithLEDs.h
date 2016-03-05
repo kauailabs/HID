@@ -24,34 +24,38 @@ THE SOFTWARE.
 // Include guard
 #pragma once
 
-// Software version
-#define HID_PROJECT_VERSION 243
+#include <Arduino.h>
+#include "PluggableUSB.h"
+#include "HID.h"
+#include "HID-Settings.h"
+#include "../HID-APIs/GamepadAPI.h"
 
-#if ARDUINO < 10607
-#error HID Project requires Arduino IDE 1.6.7 or greater. Please update your IDE.
-#endif
 
-#if !defined(USBCON)
-#error HID Project can only be used with an USB MCU.
-#endif
+class SingleGamepadWithLEDs_ : public PluggableUSBModule, public GamepadAPI
+{
+public:
+    SingleGamepadWithLEDs_(void);
+    uint32_t getLeds(void);
+	uint8_t getLen();
+	
+protected:
+    // Implementation of the PUSBListNode
+    int getInterface(uint8_t* interfaceCount);
+    int getDescriptor(USBSetup& setup);
+    bool setup(USBSetup& setup);
+    
+    uint8_t epType[1];
+    uint8_t protocol;
+    uint8_t idle;
+	
+	uint32_t leds;
+	uint8_t len;
+    
+    virtual void SendReport(void* data, int length) override;
+};
+extern SingleGamepadWithLEDs_ GamepadWithLEDs1;
+extern SingleGamepadWithLEDs_ GamepadWithLEDs2;
+extern SingleGamepadWithLEDs_ GamepadWithLEDs3;
+extern SingleGamepadWithLEDs_ GamepadWithLEDs4;
 
-// Include all HID libraries (.a linkage required to work) properly
-#include "SingleReport/SingleAbsoluteMouse.h"
-#include "MultiReport/AbsoluteMouse.h"
-#include "SingleReport/BootMouse.h"
-#include "MultiReport/ImprovedMouse.h"
-#include "SingleReport/SingleConsumer.h"
-#include "MultiReport/Consumer.h"
-#include "SingleReport/SingleGamepad.h"
-#include "MultiReport/Gamepad.h"
-#include "SingleReport/SingleSystem.h"
-#include "MultiReport/System.h"
-#include "SingleReport/RawHID.h"
-#include "SingleReport/BootKeyboard.h"
-#include "MultiReport/ImprovedKeyboard.h"
-#include "SingleReport/SingleNKROKeyboard.h"
-#include "MultiReport/NKROKeyboard.h"
-#include "SingleReport/SingleGamepadWithLEDs.h"
 
-// Include Teensy HID afterwards to overwrite key definitions if used
-// TODO include Teensy API if non english keyboard layout was used
